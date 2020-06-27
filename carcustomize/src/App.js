@@ -1,80 +1,81 @@
-import React from 'react';
+import React from "react";
 
+// after market parts
+const turbo = {
+  horsepower: 800,
+  speed: 80,
+  torque: 0,
+};
 
-function App() {
-  let turbo = {
-    horsepower: 800,
-    speed: 80,
-    torque: 0,
-  };
-  
-  let muffler = {
-    horsepower: 50,
-    speed: 10,
-    torque: 100,
-  };
-  
-  let car = {
-    name: "Mazda 3",
-    gear: [turbo, muffler],
+const muffler = {
+  horsepower: 50,
+  speed: 10,
+  torque: 100,
+};
+
+// The following cars could probably be more built more reusably using ES6
+// classes. Essentially you could make a base Car class and then do something
+// like this:
+//
+// const Mazda3 = new Car('Mazda3', { speed: 200, horsepower: 500, torque: 1500 })
+// const Camry = new Car('Camry', { speed: 220, horsepower: 470, torque: 1420 })
+const Mazda3 = {
+  name: "Mazda 3",
+  oemSpecifications: {
     speed: 200,
     horsepower: 500,
     torque: 1500,
-    currentGear() {
-      return {
-        horsepower: this.horsepower,
-        speed: this.speed,
-        torque: this.torque,
-      };
-    },
-    newGear() {
-      const statAdder = {};
-      this.gear.forEach((item) => {
-        for (let property in item) {
-          if (statAdder[property]) {
-            statAdder[property] += item[property];
-          } else {
-            statAdder[property] = item[property];
-          }
-        }
-      });
-      return statAdder;
-    },
-    combineGear() {
-      let gearStats = {};
-      let items = [];
-      let gearArray = [this.newGear(), this.currentGear()];
-      gearArray.forEach((item) => {
-        for (let property in item) {
-          if (gearStats[property]) {
-            gearStats[property] += item[property];
-          } else {
-            gearStats[property] = item[property];
-          }
-        }
-      });
-      for (var key in gearStats) {
-          let itemObj = {};
-          if (gearStats.hasOwnProperty(key)) {
-              itemObj[key] = gearStats[key]
-              items.push(itemObj)
-          }
-      }
-      console.log(items)
-      let newItems = items.map(function(item) {
-        console.log(item)
-        for(let property in item) {
-        return <p>{property}: {item[property]}</p>
-        }
-      })
-  
-      return newItems
-     }
-    }
-  
+  },
+  aftermarketParts: [turbo, muffler],
+  getSpecificationsWithAftermarketParts() {
+    return this.aftermarketParts.reduce((acc, part) => ({
+      speed: acc.speed + part.speed,
+      horsepower: acc.horsepower + part.horsepower,
+      torque: acc.torque + part.torque,
+    }), this.oemSpecifications);
+  },
+};
+
+const Camry = {
+  name: "Camry",
+  oemSpecifications: {
+    speed: 220,
+    horsepower: 470,
+    torque: 1420,
+  },
+  aftermarketParts: [turbo],
+  getSpecificationsWithAftermarketParts() {
+    return this.aftermarketParts.reduce((acc, part) => ({
+      speed: acc.speed + part.speed,
+      horsepower: acc.horsepower + part.horsepower,
+      torque: acc.torque + part.torque,
+    }), this.oemSpecifications);
+  },
+};
+
+function App() {
+  const mazda3Specs = Mazda3.getSpecificationsWithAftermarketParts();
+  const camrySpecs = Camry.getSpecificationsWithAftermarketParts();
+
   return (
-    <div className="App">
-      {car.combineGear()}
+    <div>
+      <h1>Cars</h1>
+      {/* Option 1: declaratively and explicitly render each specification     */}
+      <h2>Mazda 3</h2>
+      <ul>
+        <li>horsepower: {mazda3Specs.horsepower}</li>
+        <li>speed: {mazda3Specs.speed}</li>
+        <li>torque: {mazda3Specs.torque}</li>
+      </ul>
+      {/* Option 2: loop over keys of car's specifications with aftermarket upgrades */}
+      <h2>Camry</h2>
+      <ul>
+        {Object.keys(camrySpecs).map((specName) => (
+          <li>
+            {specName}: {camrySpecs[specName]}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
